@@ -46,9 +46,10 @@ def create_app(config_name='development'):
         initialize_db(app)
         initialize_swagger(app)
 
-
+    '''
     # Routesの確認
     print("登録済みのRoutes:")
     for rule in app.url_map.iter_rules():
         print(f"{rule.endpoint}: {rule.rule}")
+    '''
     return app
