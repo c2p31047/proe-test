@@ -1,0 +1,320 @@
+body {
+    line-height: 1.6;
+    margin: 0;
+    padding: 0;
+    background-color: #f4f4f4;
+    display: flex;
+    flex-direction: column;
+    z-index: 1000;
+}
+
+select {
+    width: 100%;
+    padding: 10px;
+    margin-top: 5px;
+}
+
+
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+th, td {
+    border: 1px solid #dddddd;
+    padding: 8px;
+    text-align: left;
+}
+
+th {
+    background-color: #f2f2f2;
+}
+
+
+header {
+    position: fixed;
+    background: #333;
+    color: #fff;
+    padding: 10px 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    z-index: 1000;
+}
+
+header h1 {
+    margin: 0;
+    padding-left: 10px;
+    width: 100vw;
+    font-size: 1.5em;
+    flex: 1;
+    text-align: left;
+    overflow: hidden;
+    white-space: nowrap;
+}
+
+main {
+    width: 100%;
+    padding-top: 0;
+    /*max-width: 600px;*/
+    box-sizing: border-box;
+    padding-top: 60px;
+}
+
+form {
+    /*max-width: 50%;*/
+    /*width: 100%;*/
+    margin: 0 auto;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    background-color: #fff;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+
+.form-group {
+    margin-bottom: 15px;
+    width: 100%;
+    padding: 10px;
+    box-sizing: border-box;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+
+.form-group input[type="text"],
+.form-group input[type="email"],
+.form-group input[type="password"] {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+}
+
+#map {
+    display:block;
+    width: 100%;
+    height: calc(100vh - 60px);
+    margin: 0 auto;
+    border: none;
+    z-index: 0;
+    position: relative;
+}
+
+.leaflet-bottom{
+    margin-bottom: 0;
+}
+
+.leaflet-control-layers {
+    margin-top: 10px;
+}
+
+
+@media (max-width: 768px) {
+    #map {
+        width: 100vw;
+        height: calc(100vh - 60px);
+        margin: 0 auto;
+        border: none;
+        z-index: 0;
+        position: relative;
+    }
+
+    .leaflet-bottom{
+        margin: 0px;
+    }
+}
+
+h1 {
+    margin-left: 10px;
+}
+
+a,a:hover,a:visited{
+    color: inherit;
+    text-decoration: none;
+}
+
+#searchBox {
+    margin: 10px auto;
+    display: block;
+    width: 50%;
+    height: 30px;
+}
+
+/* ------------------------検索ボタン------------------------- */
+
+.leaflet-control-geocoder-form [type="text"] {
+    padding: 10px 10px;
+}
+
+.leaflet-control-geocoder-form [type="submit"] {
+    padding: 10px 10px;
+}
+
+/* --------------------ハンバーガーメニュー-------------------- */
+.home-link {
+    text-align: center;
+    text-decoration: none;
+    color: #fff;
+}
+
+.home-text {
+    font-size: 1.2em;
+    margin: 0;
+    line-height: 1;
+    opacity: 1;
+}
+
+.menu-toggle {
+    background: none;
+    border: none;
+    cursor: pointer;
+    margin-left: 10px;
+    font-size: 1.5em;
+    color: #fff;
+    display: block;
+    top: 10px;
+    left: 50%;
+
+    background-color: #333;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 4px;
+}
+
+.menu-toggle.active .menu-icon {
+    background-color: transparent;
+}
+
+.menu-toggle.active .menu-icon::before {
+    transform: rotate(45deg);
+    top: 0;
+}
+
+.menu-toggle.active .menu-icon::after {
+    transform: rotate(-45deg);
+    top: 0;
+}
+
+.menu-icon {
+    display: block;
+    width: 25px;
+    height: 2px;
+    background-color: #fff;
+    position: relative;
+    transition: all 0.3s ease;
+}
+
+.menu-icon::before,
+.menu-icon::after {
+    content: '';
+    display: block;
+    width: 25px;
+    height: 2px;
+    background-color: #fff;
+    position: absolute;
+    left: 0;
+    transition: all 0.3s ease;
+}
+
+.menu-icon::before {
+    top: -7px;
+}
+
+.menu-icon::after {
+    top: 7px;
+}
+
+.nav-menu {
+    display: flex;
+    flex-direction: column;
+    transform: translateX(-100%);
+    opacity: 0;
+    visibility: hidden;
+    position: fixed;
+    top: 58px;
+    left: 0;
+    background-color: #333;
+    width: 300px;
+    /*height: calc(100vh - 60px);*/
+    overflow-y: auto;
+    transition: transform 0.3s ease, opacity 0.3s ease, visibility 0.3s ease;
+}
+
+.nav-menu.active {
+    transform: translateX(0);
+    opacity: 1;
+    visibility: visible;
+    top: 58px;
+    left: 0;
+}
+
+.nav-menu ul {
+    flex-direction: column;
+    text-align: center;
+    transition: transform 1s ease;
+    padding: 0;
+    overflow-x: hidden;
+    margin: 0;
+}
+
+.nav-menu ul li {
+    margin: 20px 0;
+    list-style: none;
+    opacity: 0;
+    transform: translateX(-30px);
+    transition: opacity 0.3s ease 0.3s, transform 0.3s ease;
+}
+
+.nav-menu ul li a{
+    opacity: 1;
+
+}
+
+.nav-menu.active ul li {
+    opacity: 1;
+    transform: translateX(0);
+    transition-delay: 0.3s;
+}
+
+/* --------------------------Flashメッセージ----------------------------- */
+
+.flash-container {
+    margin: 20px;
+}
+
+.flash-message {
+    padding: 10px;
+    margin-bottom: 15px;
+    border-radius: 5px;
+    font-weight: bold;
+}
+
+.flash-message.success {
+    background-color: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+.flash-message.danger {
+    background-color: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+.flash-message.info {
+    background-color: #d1ecf1;
+    color: #0c5460;
+    border: 1px solid #bee5eb;
+}
+
+.flash-message.warning {
+    background-color: #fff3cd;
+    color: #856404;
+    border: 1px solid #ffeeba;
+}

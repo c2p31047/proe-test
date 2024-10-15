@@ -1,0 +1,13 @@
+Flask
+Flask-SQLAlchemy
+python-dotenv
+pytest
+gunicorn
+flasgger
+Flask-Login
+Flask-Migrate
+Flask-WTF
+email_validator
+pandas
+chardet
+geopy

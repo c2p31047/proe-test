@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+
+{% block title %}茅ヶ崎市避難所備蓄管理システム - マップ{% endblock %}
+
+{% block content %}
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+    <link rel="stylesheet" href="../static/css/Control.OSMGeocoder.css">
+    <script src="../static/js/Control.OSMGeocoder.js"></script>
+    <script src="{{ url_for('static', filename='js/map.js') }}" defer></script>
+
+    <!--<div>
+        <input type="text" id="searchBox" placeholder="避難所を検索...">
+        <ul id="searchResults"></ul>
+    </div>-->
+
+    <div id="map"></div>
+
+    <script id="sheltersData" type="application/json">
+        {{ shelters|tojson }}
+    </script>
+
+    <style>
+        .leaflet-control-layers {
+            margin-top: 10px;
+        }
+    </style>
+{% endblock %}
