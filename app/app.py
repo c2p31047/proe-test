@@ -8,15 +8,7 @@ from app.db.db import db, migrate
 login_manager = LoginManager()
 
 def create_app(config=None) -> Flask:
-    """
-    Flaskアプリケーションを作成する。
 
-    Args:
-        config: 使用する設定オブジェクト（オプション）。
-
-    Returns:
-        Flaskアプリケーションのインスタンス。
-    """
     app = Flask(__name__)
 
     if not config:

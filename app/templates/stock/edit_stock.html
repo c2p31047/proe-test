@@ -51,7 +51,7 @@
 
         <div>
             <label for="expiration">賞味期限:</label>
-            <input type="date" name="expiration" value="{{ stock.expiration.strftime('%Y-%m-%d') }}">
+            <input type="date" name="expiration" value="{{ stock.expiration.strftime('%Y-%m-%d') if stock.expiration else '' }}">
         </div>
 
         <div>

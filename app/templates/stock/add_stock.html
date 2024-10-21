@@ -2,70 +2,114 @@
 
 {% block title %}備蓄の追加{% endblock %}
 
+
 {% block content %}
-    <div class="container">
-        <h1>備蓄の追加（緊急指定避難所のみ）</h1>
-
-        {% for category, message in get_flashed_messages(with_categories=true) %}
-            <div class="flash-message {{ category }}">{{ message }}</div>
-        {% endfor %}
-
-        <form action="{{ url_for('stock.add_stock') }}" method="POST">
-            <div class="form-group">
-                <label for="shelter_id">避難所</label>
-                <select name="shelter_id" id="shelter_id" class="form-control">
-                    {% for shelter in shelters %}
-                        <option value="{{ shelter.id }}">{{ shelter.name }}</option>
-                    {% endfor %}
-                </select>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/form_styles.css') }}">
+<div class="container">
+    <h2 class="title">備蓄の追加（緊急指定避難所のみ）</h2>
+    {% for category, message in get_flashed_messages(with_categories=true) %}
+        <div class="alert {{ category }}">{{ message }}</div>
+    {% endfor %}
+    <form id="mainForm" action="{{ url_for('stock.add_stock') }}" method="POST">
+        <div id="formContainer">
+            <div class="form-group-container show">
+                <div class="form-group">
+                    <label for="shelter_id">避難所<span class="required">*</span></label>
+                    <input type="text" id="shelter_search" onkeyup="filterShelters()" placeholder="避難所を検索">
+                    <select name="shelter_id" id="shelter_id" required>
+                        <option value="">避難所を選択してください</option>
+                        {% for shelter in shelters %}
+                            <option value="{{ shelter.id }}">{{ shelter.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="category_id">カテゴリー<span class="required">*</span></label>
+                    <select name="category_id" id="category_id" required>
+                        <option value="">カテゴリーを選択してください</option>
+                        {% for category in categories %}
+                            <option value="{{ category.id }}">{{ category.category }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="stockname">品名<span class="required">*</span></label>
+                    <input type="text" name="stockname" id="stockname" required>
+                </div>
+                <div class="form-group">
+                    <label for="quantity">数量<span class="required">*</span></label>
+                    <input type="number" name="quantity" id="quantity" required>
+                </div>
+                <div class="form-group">
+                    <label for="unit">単位<span class="required">*</span></label>
+                    <input type="text" name="unit" id="unit" required>
+                </div>
+                <div class="form-group">
+                    <label for="location">場所<span class="required">*</span></label>
+                    <input type="text" name="location" id="location" required>
+                </div>
+                <div class="form-group">
+                    <label for="note">メモ</label>
+                    <textarea name="note" id="note"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="expiration">賞味期限</label>
+                    <input type="date" name="expiration" id="expiration">
+                </div>
+                <div class="form-group">
+                    <label for="condition">状態</label>
+                    <textarea name="condition" id="condition"></textarea>
+                </div>
             </div>
+        </div>
+        <div class="button-container">
+            <button type="button" class="btn-add" onclick="addAnotherStock()">
+                <span class="plus-icon">＋</span> 新しい項目を追加する
+            </button>
+        </div>
+        <div class="button-container">
+            <button type="submit" class="btn-primary">一括追加</button><br>
+            <a href="{{ url_for('stock.stock_list') }}" class="btn-secondary">キャンセル</a>
+        </div>
+    </form>
+</div>
 
-            <div class="form-group">
-                <label for="category_id">カテゴリー</label>
-                <select name="category_id" id="category_id" class="form-control">
-                    <option value="">カテゴリーを選択してください</option>
-                    {% for category in categories %}
-                        <option value="{{ category.id }}">{{ category.category }}</option>
-                    {% endfor %}
-                </select>
-            </div>
+<script>
+function filterShelters() {
+    const search = document.getElementById('shelter_search').value.toLowerCase();
+    const options = document.getElementById('shelter_id').options;
+    for (let option of options) {
+        option.style.display = option.text.toLowerCase().includes(search) ? "" : "none";
+    }
+}
 
-            <div class="form-group">
-                <label for="stockname">品名</label>
-                <input type="text" name="stockname" id="stockname" class="form-control" required>
-            </div>
+function addAnotherStock() {
+    const container = document.getElementById('formContainer');
+    const newFormGroup = document.createElement('div');
+    newFormGroup.className = 'form-group-container';
+    newFormGroup.innerHTML = document.querySelector('.form-group-container').innerHTML;
+    newFormGroup.innerHTML += '<button type="button" class="btn-remove" onclick="removeStock(this)">×</button>';
+    container.appendChild(newFormGroup);
+    
+    newFormGroup.querySelectorAll('input, textarea, select').forEach(input => {
+        if (input.type !== 'button') {
+            input.value = '';
+        }
+    });
 
-            <div class="form-group">
-                <label for="quantity">数量</label>
-                <input type="number" name="quantity" id="quantity" class="form-control" required>
-            </div>
+    setTimeout(() => {
+        newFormGroup.classList.add('show');
+    }, 10);
 
-            <div class="form-group">
-                <label for="unit">単位</label>
-                <input type="text" name="unit" id="unit" class="form-control" required>
-            </div>
+    newFormGroup.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
 
-            <div class="form-group">
-                <label for="location">場所</label>
-                <input type="text" name="location" id="location" class="form-control" required>
-            </div>
-
-            <div class="form-group">
-                <label for="note">メモ</label>
-                <textarea name="note" id="note" class="form-control"></textarea>
-            </div>
-
-            <div class="form-group">
-                <label for="expiration">賞味期限</label>
-                <input type="date" name="expiration" id="expiration" class="form-control" required>
-            </div>
-
-            <div class="form-group">
-                <label for="condition">状態</label>
-                <textarea name="condition" id="condition" class="form-control"></textarea>
-            </div>
-
-            <button type="submit" class="btn btn-primary">追加</button>
-        </form>
-    </div>
+function removeStock(button) {
+    const formGroup = button.closest('.form-group-container');
+    formGroup.classList.add('hide');
+    formGroup.addEventListener('transitionend', function() {
+        formGroup.remove();
+    });
+}
+</script>
 {% endblock %}

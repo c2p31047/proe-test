@@ -3,41 +3,96 @@
 {% block title %}避難所追加{% endblock %}
 
 {% block content %}
-        <h1>避難所追加</h1>
-
-        {% for category, message in get_flashed_messages(with_categories=true) %}
-            <div class="flash-message {{ category }}">{{ message }}</div>
-        {% endfor %}
-
-        <div>
-            <a href="{{ url_for('shelter.upload_shelter') }}">
-                <button>csvから避難所を追加する</button>
-            </a>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/form_styles.css') }}">
+<div class="container">
+    <h2 class="title">新しい避難所を追加</h2>
+    {% for category, message in get_flashed_messages(with_categories=true) %}
+        <div class="alert {{ category }}">{{ message }}</div>
+    {% endfor %}
+    <div class="button-container">
+        <a href="{{ url_for('shelter.upload_shelter') }}" class="btn-secondary">
+            CSVから避難所を追加する
+        </a>
+    </div>
+    <form method="post" action="{{ url_for('shelter.add_shelter') }}">
+        <div id="formContainer">
+            <div class="form-group-container show">
+                <div class="form-group">
+                    <label for="name">名称<span class="required">*</span></label>
+                    <input type="text" name="name" required>
+                </div>
+                <div class="form-group">
+                    <label for="address">住所<span class="required">*</span></label>
+                    <input type="text" name="address" required>
+                </div>
+                <div class="form-group">
+                    <label for="latitude">緯度<span class="required">*</span></label>
+                    <input type="text" name="latitude" required>
+                </div>
+                <div class="form-group">
+                    <label for="longitude">経度<span class="required">*</span></label>
+                    <input type="text" name="longitude" required>
+                </div>
+                <div class="form-group">
+                    <label for="altitude">高度<span class="required">*</span></label>
+                    <input type="text" name="altitude" required>
+                </div>
+            </div>
         </div>
+        <div class="button-container">
+            <button type="button" class="btn-add" onclick="addAnotherShelter()">
+                <span class="plus-icon">＋</span> 新しい避難所を追加する
+            </button>
+        </div>
+        <div class="button-container">
+            <button type="submit" class="btn-primary">追加</button><br>
+            <a href="{{ url_for('shelter.manage_shelters') }}" class="btn-secondary">キャンセル</a>
+        </div>
+    </form>
+</div>
 
-        <form method="POST" action="{{ url_for('shelter.add_shelter') }}">
-            <label for="name">名称:</label>
-            <input type="text" id="name" name="name" required>
-            <br>
+<script>
+function addAnotherShelter() {
+    const container = document.getElementById('formContainer');
+    const newFormGroup = document.createElement('div');
+    newFormGroup.className = 'form-group-container';
+    newFormGroup.innerHTML = `
+        <button type="button" class="btn-remove" onclick="removeShelter(this)">×</button>
+        <div class="form-group">
+            <label for="name">名称<span class="required">*</span></label>
+            <input type="text" name="name" required>
+        </div>
+        <div class="form-group">
+            <label for="address">住所<span class="required">*</span></label>
+            <input type="text" name="address" required>
+        </div>
+        <div class="form-group">
+            <label for="latitude">緯度<span class="required">*</span></label>
+            <input type="text" name="latitude" required>
+        </div>
+        <div class="form-group">
+            <label for="longitude">経度<span class="required">*</span></label>
+            <input type="text" name="longitude" required>
+        </div>
+        <div class="form-group">
+            <label for="altitude">高度<span class="required">*</span></label>
+            <input type="text" name="altitude" required>
+        </div>`;
+    container.appendChild(newFormGroup);
+    
+    setTimeout(() => {
+        newFormGroup.classList.add('show');
+    }, 10);
 
-            <label for="address">住所:</label>
-            <input type="text" id="address" name="address" required>
-            <br>
+    newFormGroup.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
 
-            <label for="latitude">緯度:</label>
-            <input type="text" id="latitude" name="latitude" required>
-            <br>
-
-            <label for="longitude">経度:</label>
-            <input type="text" id="longitude" name="longitude" required>
-            <br>
-
-            <label for="altitude">高度:</label>
-            <input type="text" id="altitude" name="altitude" required>
-            <br>
-
-            <button type="submit">追加</button>
-        </form>
-        <br>
-        <a href="{{ url_for('shelter.manage_shelters') }}">管理者一覧に戻る</a>
+function removeShelter(button) {
+    const formGroup = button.closest('.form-group-container');
+    formGroup.classList.add('hide');
+    formGroup.addEventListener('transitionend', function() {
+        formGroup.remove();
+    });
+}
+</script>
 {% endblock %}

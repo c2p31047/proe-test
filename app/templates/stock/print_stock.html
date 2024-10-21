@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+
+{% block title %}備蓄状況帳票{% endblock %}
+
+{% block content %}
+    <style>
+        @media print {
+            body {
+                font-family: 'MS Gothic', sans-serif;
+                font-size: 12pt;
+            }
+            table {
+                width: 100%;
+                border-collapse: collapse;
+            }
+            th, td {
+                border: 1px solid black;
+                padding: 5px;
+                text-align: left;
+            }
+            th {
+                background-color: #f2f2f2;
+                text-align: center;
+                white-space: nowrap;
+            }
+            h1 {
+                text-align: center;
+                font-size: 1.5em;
+            }
+            .no-print, header, footer {
+                display: none !important;
+            }
+            @page {
+                margin: 0.5cm;
+            }
+            main {
+                margin: 0;
+            }
+        }
+    </style>
+    
+    <div class="print-only">
+        <h1>備蓄状況帳票</h1>
+        {% if shelter %}
+            <h2>{{ shelter.name }}</h2>
+        {% else %}
+            <h2>全避難所</h2>
+        {% endif %}
+        
+        <table>
+            <thead>
+                <tr>
+                    {% if not request.args.get('shelter_id') %}
+                        <th>避難所名</th>
+                    {% endif %}
+                    <th>場所</th>
+                    <th>カテゴリー</th>
+                    <th>備蓄品名</th>
+                    <th>数量</th>
+                    <th>単位</th>
+                    <th>賞味期限</th>
+                    <th>状態</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for stock in stocks %}
+                    <tr>
+                        {% if not request.args.get('shelter_id') %}
+                            <td>{{ stock.shelter.name }}</td>
+                        {% endif %}
+                        <td>{{ stock.location }}</td>
+                        <td>{{ stock.category.category }}</td>
+                        <td>{{ stock.stockname }}</td>
+                        <td>{{ stock.quantity }}</td>
+                        <td>{{ stock.unit }}</td>
+                        <td>{{ stock.expiration.strftime('%Y-%m-%d') if stock.expiration else '' }}</td>
+                        <td>{{ stock.condition }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    
+    <div class="no-print">
+        <button onclick="window.print()">印刷</button>
+        <button onclick="window.close()">閉じる</button>
+    </div>
+{% endblock %}

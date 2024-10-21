@@ -9,7 +9,7 @@ body {
 }
 
 select {
-    width: 100%;
+    width: 75%;
     padding: 10px;
     margin-top: 5px;
 }
@@ -17,15 +17,17 @@ select {
 
 
 table {
-    width: 100%;
+    width: 75%;
     border-collapse: collapse;
     margin-top: 20px;
+    margin: 10px auto;
 }
 
 th, td {
     border: 1px solid #dddddd;
     padding: 8px;
     text-align: left;
+    background-color: white;
 }
 
 th {
@@ -58,19 +60,20 @@ header h1 {
 main {
     width: 100%;
     padding-top: 0;
+    margin: 20px;
     /*max-width: 600px;*/
     box-sizing: border-box;
-    padding-top: 60px;
+    padding-top: 58px;
 }
 
 form {
     /*max-width: 50%;*/
-    /*width: 100%;*/
+    width: 75%;
     margin: 0 auto;
-    border: 1px solid #ccc;
+    /*border: 1px solid #ccc;
     border-radius: 5px;
     background-color: #fff;
-    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);*/
 }
 
 .form-group {
@@ -132,6 +135,7 @@ form {
 
 h1 {
     margin-left: 10px;
+    font-size: 2vw;
 }
 
 a,a:hover,a:visited{

@@ -25,3 +25,8 @@ def activity_stock():
 @stock_bp.route('/admin/stock_list')
 def stock_list():
     return stock_list_controller()
+
+@stock_bp.route('/admin/print_stock')
+@admin_required
+def print_stock():
+    return print_stock_controller()

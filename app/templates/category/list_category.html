@@ -5,19 +5,51 @@
 {% block content %}
     <h2>カテゴリの一覧</h2>
 
-    <a href="{{ url_for('admin.add_category') }}">新しいカテゴリを追加</a>
-
     {% for category, message in get_flashed_messages(with_categories=true) %}
         <div class="flash-message {{ category }}">{{ message }}</div>
     {% endfor %}
 
-    <ul>
-        {% for category in categories %}
-            <li>
-                {{ category.category }}
-                <a href="{{ url_for('admin.edit_category', id=category.id) }}" class="btn btn-sm btn-warning">編集</a>
-                <a href="{{ url_for('admin.delete_category', id=category.id) }}" class="btn btn-sm btn-danger" onclick="return confirm('本当に削除しますか？');">削除</a>
-            </li>
-        {% endfor %}
-    </ul>
+    <div class="action-buttons">
+        <a href="{{ url_for('admin.add_category') }}" class="button">新しいカテゴリを追加</a>
+    </div>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>No</th>
+                <th>カテゴリ名</th>
+                <th>操作</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for category in categories %}
+                <tr>
+                    <td>{{ loop.index }}</td>
+                    <td>{{ category.category }}</td>
+                    <td>
+                        <a href="{{ url_for('admin.edit_category', id=category.id) }}" class="button edit">編集</a><br>
+                        <a href="{{ url_for('admin.delete_category', id=category.id) }}" class="button delete" onclick="return confirm('本当に削除しますか？');">削除</a>
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <style>
+        th {
+            cursor: pointer;
+            text-align: center;
+            white-space: nowrap;
+            user-select: none; /* テキスト選択を無効化(下に続く) */
+            -webkit-user-select: none; /* Safari用 */
+            -moz-user-select: none; /* Firefox用 */
+            -ms-user-select: none; /* IE用 */
+        }
+        th:hover {
+            background-color: #8d8d8d;
+        }
+        .delete {
+            color: red;
+        }
+    </style>
 {% endblock %}

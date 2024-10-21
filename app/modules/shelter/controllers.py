@@ -105,20 +105,23 @@ def upload_shelter_controller():
 
 def add_shelter_controller():
     if request.method == 'POST':
-        name = request.form['name']
-        address = request.form['address']
-        latitude = request.form['latitude']
-        longitude = request.form['longitude']
-        existing_shelter = Shelter.query.filter_by(name=name).first()
-        if existing_shelter:
-            flash('この避難所は既に存在します。', 'danger')
-            return redirect(url_for('shelter.add_shelter'))
+        names = request.form.getlist('name')
+        addresses = request.form.getlist('address')
+        latitudes = request.form.getlist('latitude')
+        longitudes = request.form.getlist('longitude')
 
-        new_shelter = Shelter(name=name, address=address, latitude=latitude, longitude=longitude)
-        db.session.add(new_shelter)
+        for name, address, latitude, longitude in zip(names, addresses, latitudes, longitudes):
+            existing_shelter = Shelter.query.filter_by(name=name).first()
+            if existing_shelter:
+                flash(f'{name}は既に存在します。', 'danger')
+            else:
+                new_shelter = Shelter(name=name, address=address, latitude=latitude, longitude=longitude)
+                db.session.add(new_shelter)
+
         db.session.commit()
         flash('新しい避難所が追加されました', 'success')
         return redirect(url_for('shelter.manage_shelters'))
+
     return render_template('shelter/add_shelter.html')
 
 def manage_shelters_controller():

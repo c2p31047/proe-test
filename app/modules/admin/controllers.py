@@ -62,17 +62,21 @@ def list_category_controller():
 
 def add_category_controller():
     if request.method == 'POST':
-        category_name = request.form['category']
-        other_info = request.form['other']
-        existing_category = StockCategory.query.filter_by(category=category_name).first()
-        if existing_category:
-            flash('このカテゴリはすでに存在します。', 'error')
-            return redirect(url_for('admin.add_category'))
-        new_category = StockCategory(category=category_name, other=other_info)
-        db.session.add(new_category)
+        categories = request.form.getlist('category')
+        others = request.form.getlist('other')
+        
+        for category_name, other_info in zip(categories, others):
+            existing_category = StockCategory.query.filter_by(category=category_name).first()
+            if existing_category:
+                flash(f'{category_name}はすでに存在します。', 'danger')
+            else:
+                new_category = StockCategory(category=category_name, other=other_info)
+                db.session.add(new_category)
+        
         db.session.commit()
         flash('新しいカテゴリが追加されました。', 'success')
         return redirect(url_for('admin.list_category'))
+
     return render_template('category/add_category.html')
 
 def edit_category_controller(id):

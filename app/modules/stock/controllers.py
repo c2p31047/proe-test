@@ -1,10 +1,12 @@
-from flask import render_template, request, redirect, url_for, flash, abort
+from flask import render_template, request, redirect, url_for, flash, abort, jsonify
 from flask_login import current_user
 from app.db.db import db
 from app.models import Stock, StockActivity, StockCategory, Shelter, Admin
 from functools import wraps
 from datetime import datetime
 from sqlalchemy.orm import joinedload
+from itertools import groupby
+from operator import attrgetter
 
 def admin_required(f):
     @wraps(f)
@@ -27,7 +29,8 @@ def edit_stock_controller(id):
         stock.unit = request.form['unit']
         stock.location = request.form['location']
         stock.note = request.form['note']
-        stock.expiration = datetime.strptime(request.form['expiration'], '%Y-%m-%d')
+        expiration = request.form['expiration']
+        stock.expiration = datetime.strptime(expiration, '%Y-%m-%d').date() if expiration else None
         stock.condition = request.form['condition']
         db.session.commit()
         stock_activity = StockActivity(
@@ -50,31 +53,57 @@ def add_stock_controller():
     if admin is None:
         flash('管理者が見つかりません。', 'error')
         return redirect(url_for('stock.stock_list'))
+    
     if request.method == 'POST':
-        new_stock = Stock(
-            shelter_id=request.form['shelter_id'],
-            category_id=request.form['category_id'],
-            stockname=request.form['stockname'],
-            quantity=request.form['quantity'],
-            unit=request.form['unit'],
-            location=request.form['location'],
-            note=request.form['note'],
-            expiration=datetime.strptime(request.form['expiration'], '%Y-%m-%d').date(),
-            condition=request.form['condition']
-        )
-        db.session.add(new_stock)
-        db.session.commit()
-        stock_activity = StockActivity(
-            admin_id=admin.id,
-            shelter_id=request.form['shelter_id'],
-            stock_id=new_stock.id,
-            date=datetime.now(),
-            type="追加",
-            content=f"{request.form['stockname']} を追加しました"
-        )
-        db.session.add(stock_activity)
-        db.session.commit()
-        return redirect(url_for('stock.stock_list'))
+        if request.is_json:
+            # カテゴリー追加のAJAXリクエストを処理
+            data = request.get_json()
+            existing_category = StockCategory.query.filter_by(category=data['category']).first()
+            if existing_category:
+                return jsonify({'error': 'このカテゴリーは既に存在します。', 'id': existing_category.id, 'category': existing_category.category}), 400
+            new_category = StockCategory(category=data['category'])
+            db.session.add(new_category)
+            db.session.commit()
+            return jsonify({'message': '新しいカテゴリーが追加されました。', 'id': new_category.id, 'category': new_category.category})
+        else:
+            shelter_ids = request.form.getlist('shelter_id')
+            category_ids = request.form.getlist('category_id')
+            stocknames = request.form.getlist('stockname')
+            quantities = request.form.getlist('quantity')
+            units = request.form.getlist('unit')
+            locations = request.form.getlist('location')
+            notes = request.form.getlist('note')
+            expirations = request.form.getlist('expiration')
+            conditions = request.form.getlist('condition')
+
+            for shelter_id, category_id, stockname, quantity, unit, location, note, expiration, condition in zip(
+                    shelter_ids, category_ids, stocknames, quantities, units, locations, notes, expirations, conditions):
+                new_stock = Stock(
+                    shelter_id=shelter_id,
+                    category_id=category_id,
+                    stockname=stockname,
+                    quantity=quantity,
+                    unit=unit,
+                    location=location,
+                    note=note,
+                    expiration=datetime.strptime(expiration, '%Y-%m-%d').date() if expiration else None,
+                    condition=condition
+                )
+                db.session.add(new_stock)
+                db.session.commit()  # Each stock needs its id before the StockActivity
+                stock_activity = StockActivity(
+                    admin_id=admin.id,
+                    shelter_id=shelter_id,
+                    stock_id=new_stock.id,
+                    date=datetime.now(),
+                    type="追加",
+                    content=f"{stockname} を追加しました"
+                )
+                db.session.add(stock_activity)
+            
+            db.session.commit()
+            return redirect(url_for('stock.stock_list'))
+
     return render_template('stock/add_stock.html', shelters=shelters, categories=categories)
 
 def delete_stock_controller(id):
@@ -96,7 +125,13 @@ def delete_stock_controller(id):
 
 def stock_list_controller():
     shelters = Shelter.query.all()
-    stocks = Stock.query.all()
+    shelter_id = request.args.get('shelter_id')
+    
+    if shelter_id:
+        stocks = Stock.query.filter_by(shelter_id=shelter_id).options(joinedload(Stock.shelter), joinedload(Stock.category)).all()
+    else:
+        stocks = Stock.query.options(joinedload(Stock.shelter), joinedload(Stock.category)).order_by(Stock.shelter_id).all()
+    
     return render_template('stock/list_stock.html', stocks=stocks, shelters=shelters)
 
 def activity_stock_controller():
@@ -119,3 +154,14 @@ def activity_stock_controller():
         selected_shelter_name=selected_shelter_name,
         selected_shelter_id=selected_shelter_id
     )
+
+def print_stock_controller():
+    shelter_id = request.args.get('shelter_id')
+    if shelter_id:
+        shelter = Shelter.query.get(shelter_id)
+        stocks = Stock.query.filter_by(shelter_id=shelter_id).all()
+    else:
+        shelter = None
+        stocks = Stock.query.all()
+    
+    return render_template('stock/print_stock.html', shelter=shelter, stocks=stocks)

@@ -4,60 +4,180 @@
 {% block title %}備蓄の一覧{% endblock %}
 
 {% block content %}
+    <style>
+        @media print {
+            body {
+                font-family: 'MS Gothic', sans-serif;
+                font-size: 12pt;
+            }
+            table {
+                width: 100%;
+                border-collapse: collapse;
+            }
+            th, td {
+                border: 1px solid black;
+                padding: 5px;
+                text-align: left;
+            }
+            th {
+                background-color: #f2f2f2;
+                text-align: center;
+                white-space: nowrap;
+            }
+            h2 {
+                text-align: left;
+            }
+            h1 {
+                font-size: 30px;
+                text-align: center;
+                font-weight: bold;
+                text-decoration: underline;
+            }
+            .no-print, header, footer {
+                display: none !important;
+            }
+            .print-only {
+                display: block !important;
+            }
+            @page {
+                margin: 0.5cm;
+            }
+            main {
+                margin: 0;
+            }
+        }
+        .print-only {
+            display: none;
+        }
+        th {
+            cursor: pointer;
+            text-align: center;
+            white-space: nowrap;
+            user-select: none; /* テキスト選択を無効化(下に続く) */
+            -webkit-user-select: none; /* Safari用 */
+            -moz-user-select: none; /* Firefox用 */
+            -ms-user-select: none; /* IE用 */
+        }
+        th:hover {
+            background-color: #8d8d8d;
+        }
+        .nowrap {
+            white-space: nowrap;
+        }
+    </style>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/form_styles.css') }}">
+
+    <div class="no-print">
         <h1>備蓄の一覧</h1>
 
         {% for category, message in get_flashed_messages(with_categories=true) %}
-            <div class="flash-message {{ category }}">{{ message }}</div>
+            <div class="alert alert-{{ category }}">{{ message }}</div>
         {% endfor %}
 
-        <form method="GET" action="{{ url_for('stock.stock_list') }}">
-            <label for="shelter">避難所を選択:</label>
-            <select name="shelter" id="shelter">
-                {% for shelter in shelters %}
-                    <option value="{{ shelter.name }}">{{ shelter.name }}</option>
-                {% endfor %}
-            </select>
-            <button type="submit" class="btn btn-primary">表示</button>
+        <form method="GET" action="{{ url_for('stock.stock_list') }}" class="mb-3">
+            <div class="form-inline">
+                <label for="shelter_id" class="mr-2">避難所を選択:</label>
+                <select name="shelter_id" id="shelter_id" class="form-control mr-2">
+                    <option value="">全ての避難所</option>
+                    {% for shelter in shelters %}
+                        <option value="{{ shelter.id }}" {% if shelter.id|string == request.args.get('shelter_id') %}selected{% endif %}>
+                            {{ shelter.name }}
+                        </option>
+                    {% endfor %}
+                </select>
+                <button type="submit" class="btn-show">表示</button>
+            </div>
         </form>
 
-        <table>
-            <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>避難所名</th>
-                    <th>カテゴリー</th>
-                    <th>備蓄品名</th>
-                    <th>数量</th>
-                    <th>単位</th>
-                    <th>場所</th>
-                    <th>賞味期限</th>
-                    <th>状態</th>
-                    <th>アクション</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for stock in stocks %}
-                    {% if stock.shelter.name == request.args.get('shelter') %}
-                        <tr>
-                            <td>{{ stock.id }}</td>
-                            <td>{{ stock.shelter.name }}</td>
-                            <td>{{ stock.category.name }}</td>
-                            <td>{{ stock.stockname }}</td>
-                            <td>{{ stock.quantity }}</td>
-                            <td>{{ stock.unit }}</td>
-                            <td>{{ stock.location }}</td>
-                            <td>{{ stock.expiration }}</td>
-                            <td>{{ stock.condition }}</td>
-                            <td>
-                                <a href="{{ url_for('stock.edit_stock', id=stock.id) }}" class="btn btn-sm btn-warning">編集</a>
-                                <a href="{{ url_for('stock.delete_stock', id=stock.id) }}" class="btn btn-sm btn-danger" onclick="return confirm('本当に削除しますか？');">削除</a>
-                            </td>
-                        </tr>
-                    {% endif %}
-                {% endfor %}
-            </tbody>
-        </table>
-
-        <a href="{{ url_for('stock.add_stock') }}" class="btn btn-primary">新しい備蓄品を追加</a>
+        <div class="mb-3">
+            <button onclick="window.print()" class="btn btn-secondary mr-2">
+                <i class="fas fa-print"></i> 印刷
+            </button>
+            <a href="{{ url_for('stock.add_stock') }}" class="btn btn-success">新しい備蓄品を追加</a>
+        </div>
     </div>
+
+    <div class="print-only">
+        <h1>備蓄状況帳票</h1>
+        {% if request.args.get('shelter_id') %}
+            {% set selected_shelter = shelters|selectattr('id', 'equalto', request.args.get('shelter_id')|int)|first %}
+            <h2>{{ selected_shelter.name }}</h2>
+        {% else %}
+            <h2>全避難所</h2>
+        {% endif %}
+    </div>
+
+    <table id="stockTable">
+        <thead>
+            <tr>
+                <th class="no-print" onclick="sortTable(0)">No</th>
+                {% if not request.args.get('shelter_id') %}
+                    <th onclick="sortTable(1)">避難所名</th>
+                    <th onclick="sortTable(2)">場所</th>
+                    <th onclick="sortTable(3)">カテゴリー</th>
+                    <th onclick="sortTable(4)">備蓄品名</th>
+                    <th onclick="sortTable(5)">数量</th>
+                    <th onclick="sortTable(6)">単位</th>
+                    <th onclick="sortTable(7)">賞味期限</th>
+                    <th onclick="sortTable(8)">状態</th>
+                {% else %}
+                    <th onclick="sortTable(1)">場所</th>
+                    <th onclick="sortTable(2)">カテゴリー</th>
+                    <th onclick="sortTable(3)">備蓄品名</th>
+                    <th onclick="sortTable(4)">数量</th>
+                    <th onclick="sortTable(5)">単位</th>
+                    <th onclick="sortTable(6)">賞味期限</th>
+                    <th onclick="sortTable(7)">状態</th>
+                {% endif %}
+                <th class="no-print">操作</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for stock in stocks %}
+                <tr>
+                    <td class="no-print">{{ loop.index }}</td>
+                    {% if not request.args.get('shelter_id') %}
+                        <td class="nowrap">{{ stock.shelter.name }}</td>
+                    {% endif %}
+                    <td>{{ stock.location if stock.location else '' }}</td>
+                    <td>{{ stock.category.category if stock.category else '' }}</td>
+                    <td>{{ stock.stockname if stock.stockname else '' }}</td>
+                    <td>{{ stock.quantity if stock.quantity else '' }}</td>
+                    <td>{{ stock.unit if stock.unit else '' }}</td>
+                    <td class="nowrap">{{ stock.expiration.strftime('%Y-%m-%d') if stock.expiration else '' }}</td>
+                    <td>{{ stock.condition if stock.condition else '' }}</td>
+                    <td class="no-print">
+                        <a href="{{ url_for('stock.edit_stock', id=stock.id) }}" class="btn btn-sm btn-warning mb-1">編集</a>
+                        <a href="{{ url_for('stock.delete_stock', id=stock.id) }}" class="btn btn-sm btn-danger" onclick="return confirm('本当に削除しますか？');">削除</a>
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <script>
+        function sortTable(n) {
+            const table = document.getElementById("stockTable");
+            const rows = Array.from(table.rows).slice(1); // ヘッダーを除外
+            const num = n === 0 || n === 5; // No列と数量列は数値としてソート
+            const date = n === 7; // 賞味期限列は日付としてソート
+
+            rows.sort((a, b) => {
+                let x = a.cells[n].textContent.trim();
+                let y = b.cells[n].textContent.trim();
+                
+                if (num) return parseFloat(x) - parseFloat(y);
+                if (date) return new Date(x) - new Date(y);
+                return x.localeCompare(y);
+            });
+
+            // ソート方向を反転
+            if (table.rows[0].cells[n].classList.toggle('sort-desc')) {
+                rows.reverse();
+            }
+
+            // ソート結果を���ーブルに適用
+            table.tBodies[0].append(...rows);
+        }
+    </script>
 {% endblock %}

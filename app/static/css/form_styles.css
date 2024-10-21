@@ -1,0 +1,133 @@
+main {
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+}
+
+.container {
+    max-width: 85%;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.form-group {
+    margin-bottom: 15px;
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 5px;
+}
+
+.form-group input,
+.form-group textarea,
+.form-group select {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+.required {
+    color: red;
+}
+
+.form-group-container {
+    position: relative;
+    padding: 20px;
+    border: 1px solid #888;
+    border-radius: 5px;
+    margin-bottom: 20px;
+    opacity: 0;
+    transform: translateY(-20px);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.form-group-container.show {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.form-group-container.hide {
+    opacity: 0;
+    transform: translateY(-20px);
+}
+
+.btn-remove {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: none;
+    border: none;
+    font-size: 25px;
+    color: #dc3545;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.btn-remove:hover {
+    color: #9901107a;
+}
+
+.button-container {
+    text-align: center;
+    margin-top: 20px;
+}
+
+.btn-add,
+.btn-primary,
+.btn-secondary {
+    display: inline-block;
+    padding: 10px 20px;
+    font-size: 16px;
+    border: none;
+    border-radius: 20px;
+    cursor: pointer;
+    text-decoration: none;
+}
+
+.btn-add {
+    background-color: #007bff;
+    color: white;
+}
+
+.btn-primary {
+    background-color: #8a8a8a;
+    color: white;
+    padding: 16px 114px;
+}
+
+
+.btn-add:hover {
+    background-color: #0056b3;
+}
+
+.plus-icon {
+    font-size: 24px;
+    font-weight: bold;
+}
+
+.btn-show {
+    background-color: #999;
+    color: white;
+    border: 1px solid black;
+    border-radius: 5px;
+    padding: 10px 20px;
+}
+
+.btn-show:hover {
+    background-color: #777;
+    color: white;
+}
+
+.btn-new {
+    background-color: gray;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 10px;
+}
