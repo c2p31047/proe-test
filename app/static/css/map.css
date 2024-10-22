@@ -1,0 +1,20 @@
+.custom-icon {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    border: 2px solid black;
+    padding: 5px;
+    box-sizing: border-box;
+}
+
+.emergency-shelter-icon {
+    background-color: blue;
+}
+
+.wide-shelter-icon {
+    background-color: white;
+}
+
+.nearest-shelter-icon {
+    background-color: red;
+}

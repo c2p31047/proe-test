@@ -4,6 +4,7 @@ class BaseConfig:
     TESTING = False
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SECRET_KEY = 'your-secret-key'
+    GOOGLE_MAPS_API_KEY = 'AIzaSyA0kUv4LGrAKsapFLVtlXJe-kySxpsarzA'
 
 class DevelopmentConfig(BaseConfig):
     """Development configuration."""

@@ -6,28 +6,35 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 function setupMap() {
+    // 地図の初期設定
     map = L.map('map').setView([35.3331, 139.4042], 14);
 
+    // タイルレイヤーの追加
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
     }).addTo(map);
 
+    // 避難所データとユーザーの住所情報を取得
     allShelters = JSON.parse(document.getElementById('sheltersData').textContent);
     userHomeAddress = JSON.parse(document.getElementById('userAddress').textContent);
 
+    // 避難所マーカーの作成と分類
     const emergencyShelters = [];
     const wideShelters = [];
 
     allShelters.forEach(shelter => {
+        // マーカーのスタイル設定
         const pinColor = shelter.other ? 'white' : 'blue';
         const capacityInfo = shelter.capacity ? `想定収容人数: ${shelter.capacity}人<br>` : '想定収容人数: 不明<br>';
 
+        // カスタムアイコンの作成
         const icon = L.divIcon({
             className: 'custom-icon',
             html: `<div style="background-color: ${pinColor}; width: 20px; height: 20px; border-radius: 50%; border: 2px solid black; padding: 5px; box-sizing: border-box;"></div>`,
             iconSize: [20, 20]
         });
 
+        // マーカーの作成とポップアップの設定
         const marker = L.marker([shelter.latitude, shelter.longitude], { icon: icon })
             .bindPopup(`
                 <strong>${shelter.name}</strong><br>
@@ -36,6 +43,7 @@ function setupMap() {
                 <a href="/shelter/${shelter.id}">詳細を見る</a>
             `);
 
+        // 避難所タイプに応じて分類
         if (shelter.other) {
             wideShelters.push(marker);
         } else {
@@ -43,9 +51,11 @@ function setupMap() {
         }
     });
 
+    // レイヤーグループの作成と地図への追加
     const emergencySheltersLayer = L.layerGroup(emergencyShelters).addTo(map);
     const wideSheltersLayer = L.layerGroup(wideShelters).addTo(map);
 
+    // カスタムコントロールの作成
     L.Control.CustomButtons = L.Control.extend({
         onAdd: function(map) {
             var container = L.DomUtil.create('div', 'leaflet-bar leaflet-control custom-buttons-container');
@@ -132,22 +142,34 @@ function setupMap() {
     });
 }
 
+// 2点間の距離をヒュベニの公式を使って計算する関数
 function calculateDistance(lat1, lon1, lat2, lon2) {
-    const R = 6371; // 地球の半径（km）
-    const radLat1 = lat1 * Math.PI / 180; // 緯度1をラジアンに変換
-    const radLat2 = lat2 * Math.PI / 180; // 緯度2をラジアンに変換
-    const deltaLat = (lat2 - lat1) * Math.PI / 180; // 緯度の差
-    const deltaLon = (lon2 - lon1) * Math.PI / 180; // 経度の差
+    // 地球の半径（キロメートル）
+    const R = 6371;
+    
+    // 緯度をラジアンに変換
+    // ラジアン = 度 * (π / 180)
+    const radLat1 = lat1 * Math.PI / 180;
+    const radLat2 = lat2 * Math.PI / 180;
+    
+    // 緯度と経度の差をラジアンで計算
+    const deltaLat = (lat2 - lat1) * Math.PI / 180;
+    const deltaLon = (lon2 - lon1) * Math.PI / 180;
 
-    // ヒュベニの公式
+    // ヒュベニの公式の計算
+    // a = sin²(Δφ/2) + cos φ1 ⋅ cos φ2 ⋅ sin²(Δλ/2)
     const a = Math.sin(deltaLat/2) * Math.sin(deltaLat/2) +
               Math.cos(radLat1) * Math.cos(radLat2) *
               Math.sin(deltaLon/2) * Math.sin(deltaLon/2);
+    
+    // c = 2 ⋅ atan2( √a, √(1−a) )
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
 
-    return R * c; // 距離（km）
+    // 距離 = 地球の半径 * c
+    return R * c; // 距離（キロメートル）
 }
 
+// 現在地から最寄りの避難所を探す関数
 function findNearestShelterFromCurrentLocation() {
     if ("geolocation" in navigator) {
         navigator.geolocation.getCurrentPosition(
@@ -172,6 +194,7 @@ function findNearestShelterFromCurrentLocation() {
     }
 }
 
+// 登録住所から最寄りの避難所を探す関数
 function findNearestShelterFromHomeAddress() {
     if (userHomeAddress) {
         getLatLngFromAddress(userHomeAddress)
@@ -186,6 +209,7 @@ function findNearestShelterFromHomeAddress() {
     }
 }
 
+// デフォルトの位置（茅ヶ崎市役所）を使用する関数
 function useDefaultLocation() {
     getLatLngFromAddress("茅ヶ崎市役所")
         .then(({ lat, lng }) => {
@@ -196,21 +220,28 @@ function useDefaultLocation() {
         });
 }
 
+// 最寄りの避難所を表示する関数
 function showNearestShelter(lat, lng, isCurrentLocation) {
     if (userPin) {
         map.removeLayer(userPin);
     }
+    
     userPin = L.marker([lat, lng]).addTo(map);
     
+    // ピンのポップアップテキストを設定
     const locationText = isCurrentLocation ? '現在地' : '自宅';
     userPin.bindPopup(`${locationText}`).openPopup();
 
+    // 変数を初期化
     let nearestShelter = null;
-    let minDistance = Infinity;
+    let minDistance = Infinity; // 最小距離を無限大で初期化
 
+    // すべての避難所をループして最寄りのものを見つける
     allShelters.forEach(shelter => {
-        if (!shelter.other) {
+        if (!shelter.other) { // 緊急指定避難所のみを
+            // ユーザーの位置と避難所の距離を計算
             const distance = calculateDistance(lat, lng, shelter.latitude, shelter.longitude);
+            // 近い避難所が見つかった場合に更新
             if (distance < minDistance) {
                 minDistance = distance;
                 nearestShelter = shelter;
@@ -218,10 +249,14 @@ function showNearestShelter(lat, lng, isCurrentLocation) {
         }
     });
 
+    // 最寄りの避難所が見つかった場合
     if (nearestShelter) {
+        // 既存の最寄り避難所ピンを削除
         if (nearestShelterPin) {
             map.removeLayer(nearestShelterPin);
         }
+        
+        // 新しい最寄り避難所ピンを追加
         nearestShelterPin = L.marker([nearestShelter.latitude, nearestShelter.longitude], {
             icon: L.divIcon({
                 className: 'custom-icon',
@@ -230,7 +265,10 @@ function showNearestShelter(lat, lng, isCurrentLocation) {
             })
         }).addTo(map);
 
+        // 避難所の収容人数情報を設定
         const capacityText = nearestShelter.capacity ? `想定収容人数: ${nearestShelter.capacity}人<br>` : '想定収容人数: 不明<br>';
+        
+        // 最寄り避難所のポップアップ情報を設定
         nearestShelterPin.bindPopup(`
             <strong style="color: red;">${locationText}から最寄りの緊急指定避難所</strong><br>
             <strong>${nearestShelter.name}</strong><br>
@@ -239,12 +277,15 @@ function showNearestShelter(lat, lng, isCurrentLocation) {
             <a href="/shelter/${nearestShelter.id}">詳細を見る</a>
         `).openPopup();
 
+        // 地図の表示を最寄り避難所にズーム
         map.setView([nearestShelter.latitude, nearestShelter.longitude], 15);
     } else {
+        // 近くに避難所が見つからなかった場合のアラート 無限な限り表示されない
         alert("近くに緊急指定避難所が見つかりませんでした。");
     }
 }
 
+// 住所を検索して表示
 function searchAddress(address) {
     if (address) {
         getLatLngFromAddress(address)
@@ -253,16 +294,17 @@ function searchAddress(address) {
                 if (searchPin) {
                     map.removeLayer(searchPin);
                 }
-                searchPin = L.marker([lat, lng]).addTo(map)  // 検索した位置にマーカーを追加
+                searchPin = L.marker([lat, lng]).addTo(map)  // マーカーを追加
                     .bindPopup('検索した位置')
                     .openPopup();
             })
             .catch(error => {
-                alert("入力された住所の緯度経度の取得に失敗しました。");
+                alert("入力された住所の取得に失敗しました。");
             });
     }
 }
 
+// 住所から緯度経度を取得する関数
 function getLatLngFromAddress(address) {
     return new Promise((resolve, reject) => {
         const geocoder = new google.maps.Geocoder();
@@ -272,7 +314,7 @@ function getLatLngFromAddress(address) {
                 const lng = results[0].geometry.location.lng();
                 resolve({ lat, lng });
             } else {
-                reject('Geocode was not successful for the following reason: ' + status);
+                reject(`GeoCodingの失敗: ${status}`);
             }
         });
     });

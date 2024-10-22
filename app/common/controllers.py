@@ -4,6 +4,8 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from app.db.db import db
 from app.models import User, Shelter
 from app.forms import LoginForm, RegisterForm
+import googlemaps
+from math import radians, sin, cos, sqrt, atan2
 
 def get_shelters():
     shelters = Shelter.query.all()
@@ -99,8 +101,10 @@ def settings_controller():
             current_user.email = new_email
         if new_address:
             current_user.address = new_address
+            update_nearest_shelter(current_user, new_address, 'shelter_id')
         if new_work_address:
             current_user.work_address = new_work_address
+            update_nearest_shelter(current_user, new_work_address, 'work_shelter_id')
         if new_password and check_password_hash(current_user.password, current_password):
             current_user.password = generate_password_hash(new_password)
 
@@ -108,3 +112,88 @@ def settings_controller():
         flash('設定が更新されました', 'success')
         return redirect(url_for('main.index'))
     return render_template('main/settings.html')
+
+def update_nearest_shelter(user, address, shelter_field):
+    lat, lng = get_lat_lng_from_address(address)
+    
+    if lat and lng:
+        nearest_shelter = find_nearest_shelter(lat, lng)
+        if nearest_shelter:
+            setattr(user, shelter_field, nearest_shelter.id)
+            db.session.commit()
+        else:
+            flash(f'指定された住所 "{address}" の近くに緊急指定避難所が見つかりませんでした。', 'warning')
+
+def get_lat_lng_from_address(address):
+    gmaps = googlemaps.Client(key=current_app.config['GOOGLE_MAPS_API_KEY'])
+    try:
+        geocode_result = gmaps.geocode(address)
+        if geocode_result:
+            location = geocode_result[0]['geometry']['location']
+            return location['lat'], location['lng']
+    except Exception as e:
+        current_app.logger.error(f"Geocoding error: {str(e)}")
+    return None, None
+
+def find_nearest_shelter(lat, lng):
+    # 緊急指定避難所のみを取得
+    shelters = Shelter.query.filter((Shelter.other == None) | (Shelter.other == '')).all()
+    nearest_shelter = None
+    min_distance = float('inf')
+
+    for shelter in shelters:
+        distance = calculate_distance(lat, lng, shelter.latitude, shelter.longitude)
+        if distance < min_distance:
+            min_distance = distance
+            nearest_shelter = shelter
+
+    return nearest_shelter
+
+def get_lat_lng_from_address(address):
+    gmaps = googlemaps.Client(key=current_app.config['GOOGLE_MAPS_API_KEY'])
+    try:
+        geocode_result = gmaps.geocode(address)
+        if geocode_result:
+            location = geocode_result[0]['geometry']['location']
+            return location['lat'], location['lng']
+    except Exception as e:
+        current_app.logger.error(f"ジオコーディングエラー: {str(e)}")
+    return None, None
+
+def find_nearest_shelter(lat, lng):
+    # 緊急指定避難所のみを取得
+    shelters = Shelter.query.filter((Shelter.other == None) | (Shelter.other == '')).all()
+    nearest_shelter = None
+    min_distance = float('inf')
+
+    for shelter in shelters:
+        distance = calculate_distance(lat, lng, shelter.latitude, shelter.longitude)
+        if distance < min_distance:
+            min_distance = distance
+            nearest_shelter = shelter
+
+    return nearest_shelter
+
+def calculate_distance(lat1, lon1, lat2, lon2):
+    R = 6371  # 地球の半径（キロメートル）
+
+    # 緯度と経度をラジアンに変換
+    lat1, lon1, lat2, lon2 = map(radians, [lat1, lon1, lat2, lon2])
+
+    # 緯度と経度の差を計算
+    dlat = lat2 - lat1
+    dlon = lon2 - lon1
+
+    # ヒュベニの公式を使用して距離を計算
+    # a = sin²(Δφ/2) + cos φ1 ⋅ cos φ2 ⋅ sin²(Δλ/2)
+    # ここで、φは緯度、λは経度を表す
+    a = sin(dlat/2)**2 + cos(lat1) * cos(lat2) * sin(dlon/2)**2
+
+    # c = 2 ⋅ atan2( √a, √(1−a) )
+    # atan2は逆正接（アークタンジェント）関数
+    c = 2 * atan2(sqrt(a), sqrt(1-a))
+
+    # 距離 = 地球の半径 * c
+    distance = R * c
+
+    return distance
