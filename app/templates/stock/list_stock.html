@@ -120,6 +120,7 @@
                     <th onclick="sortTable(6)">単位</th>
                     <th onclick="sortTable(7)">賞味期限</th>
                     <th onclick="sortTable(8)">状態</th>
+                    <th onclick="sortTable(9)">メモ</th>
                 {% else %}
                     <th onclick="sortTable(1)">場所</th>
                     <th onclick="sortTable(2)">カテゴリー</th>
@@ -128,6 +129,7 @@
                     <th onclick="sortTable(5)">単位</th>
                     <th onclick="sortTable(6)">賞味期限</th>
                     <th onclick="sortTable(7)">状態</th>
+                    <th onclick="sortTable(8)">メモ</th>
                 {% endif %}
                 <th class="no-print">操作</th>
             </tr>
@@ -146,6 +148,7 @@
                     <td>{{ stock.unit if stock.unit else '' }}</td>
                     <td class="nowrap">{{ stock.expiration.strftime('%Y-%m-%d') if stock.expiration else '' }}</td>
                     <td>{{ stock.condition if stock.condition else '' }}</td>
+                    <td>{{ stock.note if stock.note else '' }}</td>
                     <td class="no-print">
                         <a href="{{ url_for('stock.edit_stock', id=stock.id) }}" class="btn btn-sm btn-warning mb-1">編集</a>
                         <a href="{{ url_for('stock.delete_stock', id=stock.id) }}" class="btn btn-sm btn-danger" onclick="return confirm('本当に削除しますか？');">削除</a>
@@ -176,7 +179,7 @@
                 rows.reverse();
             }
 
-            // ソート結果を���ーブルに適用
+            // ソート結果をテーブルに適用
             table.tBodies[0].append(...rows);
         }
     </script>

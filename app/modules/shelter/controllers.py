@@ -39,7 +39,7 @@ def upload_shelter_controller():
                     result = chardet.detect(raw)
                     encoding = result['encoding']
                 
-                # エンコーディングが検出できない場合やUTF-8での読み込みが失敗した場合はShift-JISを試す
+                # 検出できないときや、UTF-8での読み込みが失敗した時にShift-JISを試す
                 try:
                     df = pd.read_csv(filepath, encoding=encoding, low_memory=False)
                 except UnicodeDecodeError:
@@ -54,7 +54,7 @@ def upload_shelter_controller():
                 for _, row in df.iterrows():
                     existing_shelter = Shelter.query.filter_by(name=row['名称']).first()
                     if existing_shelter is None:
-                        # 収容人数の処理（空白や無効な値の場合にはNoneにする）
+                        # 収容人数（空白や無効な値の場合にはNoneに）
                         capacity = None
                         # "想定収容人数" と "収容可能人数（人）" のカラムから値を取得
                         capacity_str = str(row.get('想定収容人数', '')).strip() or str(row.get('収容可能人数（人）', '')).strip()
@@ -69,13 +69,13 @@ def upload_shelter_controller():
                         if other_value == 0:
                             other_value = None
                         
-                        # データベースに保存する新しいシェルター情報を作成
+                        # データベースに保存する処理
                         shelter = Shelter(
                             name=row.get('名称', False),
                             address=row['住所'],
                             latitude=row['緯度'],
                             longitude=row['経度'],
-                            capacity=capacity,  # capacity が空白なら None が入る
+                            capacity=capacity,
                             hightide=row.get('災害種別_高潮', False),
                             earthquake=row.get('災害種別_地震', False),
                             tsunami=row.get('災害種別_津波', False),
@@ -87,12 +87,10 @@ def upload_shelter_controller():
                         )
                         db.session.add(shelter)
 
-                # データベースにコミット
                 db.session.commit()
                 flash('ファイルが正常にアップロードされ、データが保存されました。')
 
             except Exception as e:
-                # エラー時のロールバックとエラーメッセージの表示
                 db.session.rollback()
                 flash(f'エラーが発生しました: {str(e)}')
             finally:

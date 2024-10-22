@@ -12,7 +12,8 @@ def get_shelters():
 
 def index_controller():
     shelters_dict = get_shelters()
-    return render_template('main/index.html', shelters=shelters_dict, current_user=current_user)
+    user_address = current_user.address if current_user.is_authenticated else None
+    return render_template('main/index.html', shelters=shelters_dict, user_address=user_address, current_user=current_user)
 
 def login_controller():
     form = LoginForm()

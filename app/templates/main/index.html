@@ -5,25 +5,101 @@
 {% block content %}
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
-    <script src="{{ url_for('static', filename='js/map.js') }}" defer></script>
-
-    <!--<div>
-        <input type="text" id="searchBox" placeholder="避難所を検索...">
-        <ul id="searchResults"></ul>
-    </div>-->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="{{ url_for('static', filename='js/map.js') }}"></script>
+    <script>function initMap() {}</script>
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyA0kUv4LGrAKsapFLVtlXJe-kySxpsarzA&callback=initMap&loading=async" defer></script>
 
     <div id="map"></div>
 
     <script id="sheltersData" type="application/json">
         {{ shelters|tojson }}
     </script>
+    <script id="userAddress" type="application/json">
+        {{ user_address|tojson|safe }}
+    </script>
 
     <style>
         .leaflet-control-layers {
-            margin-top: 10px;
+            display: none;
+        }
+        .leaflet-control-layers.leaflet-control-layers-expanded {
+            display: block;
         }
         main {
             margin: 0;
+        }
+        .custom-popup .leaflet-popup-content-wrapper {
+            background: rgba(255, 255, 255, 0.8);
+            color: #333;
+            font-size: 14px;
+            line-height: 24px;
+            border-radius: 0px;
+        }
+        .custom-popup .leaflet-popup-content-wrapper a {
+            color: rgba(0, 0, 255, 0.8);
+        }
+        .custom-popup .leaflet-popup-tip-container {
+            width: 30px;
+            height: 15px;
+        }
+        .custom-popup .leaflet-popup-tip {
+            background: rgba(255, 255, 255, 0.8);
+        }
+        .custom-buttons-container {
+            display: flex;
+            flex-direction: column;
+        }
+        .custom-control-item {
+            position: relative;
+        }
+        .custom-button {
+            width: 30px;
+            height: 30px;
+            line-height: 30px;
+            text-align: center;
+            font-size: 16px;
+            color: #333;
+            text-decoration: none;
+            display: block;
+            margin-bottom: 5px;
+        }
+        .custom-button:hover {
+            background-color: #f4f4f4;
+        }
+        .control-panel {
+            display: none;
+            position: absolute;
+            top: 0;
+            right: 100%;
+            background-color: white;
+            border: 1px solid #ccc;
+            padding: 5px;
+            border-radius: 4px;
+            z-index: 1000;
+        }
+        .layer-list {
+            min-width: 150px;
+        }
+        .layer-item {
+            margin-bottom: 5px;
+        }
+        .search-bar {
+            padding: 5px;
+        }
+        #search-input {
+            width: 150px;
+            padding: 5px;
+        }
+        #search-button {
+            padding: 5px 10px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        body,header {
+            user-select: none;
         }
     </style>
 {% endblock %}

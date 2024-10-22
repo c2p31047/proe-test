@@ -11,3 +11,4 @@ email_validator
 pandas
 chardet
 geopy
+pymysql

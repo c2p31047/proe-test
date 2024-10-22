@@ -60,6 +60,7 @@
                     <th>単位</th>
                     <th>賞味期限</th>
                     <th>状態</th>
+                    <th>メモ</th>
                 </tr>
             </thead>
             <tbody>
@@ -75,6 +76,7 @@
                         <td>{{ stock.unit }}</td>
                         <td>{{ stock.expiration.strftime('%Y-%m-%d') if stock.expiration else '' }}</td>
                         <td>{{ stock.condition }}</td>
+                        <td>{{ stock.note }}</td>
                     </tr>
                 {% endfor %}
             </tbody>

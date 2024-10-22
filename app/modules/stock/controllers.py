@@ -154,14 +154,3 @@ def activity_stock_controller():
         selected_shelter_name=selected_shelter_name,
         selected_shelter_id=selected_shelter_id
     )
-
-def print_stock_controller():
-    shelter_id = request.args.get('shelter_id')
-    if shelter_id:
-        shelter = Shelter.query.get(shelter_id)
-        stocks = Stock.query.filter_by(shelter_id=shelter_id).all()
-    else:
-        shelter = None
-        stocks = Stock.query.all()
-    
-    return render_template('stock/print_stock.html', shelter=shelter, stocks=stocks)
