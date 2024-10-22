@@ -35,13 +35,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // 検索機能
-    const osmGeocoder = new L.Control.OSMGeocoder({
-        placeholder: '場所を検索する',
-        text: '検索',
-    });
-    map.addControl(osmGeocoder);
-
     // レイヤーのコントロールを作成
     const layerControl = L.control.layers({}, {
         '緊急指定避難所': L.layerGroup(markersWithoutOther).addTo(map),
